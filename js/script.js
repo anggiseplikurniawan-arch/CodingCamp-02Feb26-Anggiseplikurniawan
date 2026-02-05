@@ -1,169 +1,125 @@
-// To-Do List Application
-class TodoApp {
-    constructor() {
-        this.todos = JSON.parse(localStorage.getItem('todos')) || [];
-        this.currentFilter = 'all';
-        this.init();
+// Array to store todos
+let todos = [];
+
+// DOM Elements
+const taskInput = document.getElementById('taskInput');
+const dateInput = document.getElementById('dateInput');
+const todoListBody = document.getElementById('todoListBody');
+const emptyState = document.getElementById('emptyState');
+const filterOption = document.getElementById('filterOption');
+
+// Function: Add Todo
+function addTodo() {
+    const taskValue = taskInput.value.trim();
+    const dateValue = dateInput.value;
+
+    // Validation
+    if (taskValue === '' || dateValue === '') {
+        alert('Please fill in both the task name and the date!');
+        return;
     }
 
-    init() {
-        this.cacheElements();
-        this.bindEvents();
-        this.render();
-    }
+    const newTask = {
+        id: Date.now(),
+        task: taskValue,
+        date: dateValue,
+        completed: false
+    };
 
-    cacheElements() {
-        this.form = document.getElementById('todoForm');
-        this.todoInput = document.getElementById('todoInput');
-        this.dateInput = document.getElementById('dateInput');
-        this.todoList = document.getElementById('todoList');
-        this.filterBtns = document.querySelectorAll('.filter-btn');
-        this.inputError = document.getElementById('inputError');
-        this.dateError = document.getElementById('dateError');
-    }
+    todos.push(newTask);
+    renderTodos();
+    resetForm();
+}
 
-    bindEvents() {
-        this.form.addEventListener('submit', (e) => this.handleAddTodo(e));
-        this.filterBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleFilter(e));
-        });
-    }
+// Function: Reset Form
+function resetForm() {
+    taskInput.value = '';
+    dateInput.value = '';
+    taskInput.focus();
+}
 
-    validateInput() {
-        let isValid = true;
-        
-        // Clear previous errors
-        this.inputError.classList.remove('show');
-        this.dateError.classList.remove('show');
-
-        // Validate task input
-        const taskValue = this.todoInput.value.trim();
-        if (!taskValue) {
-            this.inputError.textContent = 'Please enter a task description.';
-            this.inputError.classList.add('show');
-            isValid = false;
-        } else if (taskValue.length < 3) {
-            this.inputError.textContent = 'Task must be at least 3 characters long.';
-            this.inputError.classList.add('show');
-            isValid = false;
-        }
-
-        // Validate date input
-        const dateValue = this.dateInput.value;
-        if (!dateValue) {
-            this.dateError.textContent = 'Please select a due date.';
-            this.dateError.classList.add('show');
-            isValid = false;
-        } else {
-            const selectedDate = new Date(dateValue);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            if (selectedDate < today) {
-                this.dateError.textContent = 'Due date cannot be in the past.';
-                this.dateError.classList.add('show');
-                isValid = false;
-            }
-        }
-
-        return isValid;
-    }
-
-    handleAddTodo(e) {
-        e.preventDefault();
-
-        if (!this.validateInput()) {
-            return;
-        }
-
-        const todo = {
-            id: Date.now(),
-            text: this.todoInput.value.trim(),
-            date: this.dateInput.value,
-            completed: false,
-            createdAt: new Date().toISOString()
-        };
-
-        this.todos.unshift(todo);
-        this.saveTodos();
-        this.render();
-        this.form.reset();
-    }
-
-    handleDeleteTodo(id) {
-        this.todos = this.todos.filter(todo => todo.id !== id);
-        this.saveTodos();
-        this.render();
-    }
-
-    handleToggleTodo(id) {
-        const todo = this.todos.find(todo => todo.id === id);
-        if (todo) {
-            todo.completed = !todo.completed;
-            this.saveTodos();
-            this.render();
-        }
-    }
-
-    handleFilter(e) {
-        this.filterBtns.forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
-        this.currentFilter = e.target.dataset.filter;
-        this.render();
-    }
-
-    getFilteredTodos() {
-        switch (this.currentFilter) {
-            case 'pending':
-                return this.todos.filter(todo => !todo.completed);
-            case 'completed':
-                return this.todos.filter(todo => todo.completed);
-            default:
-                return this.todos;
-        }
-    }
-
-    formatDate(dateString) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString('en-US', options);
-    }
-
-    render() {
-        const filteredTodos = this.getFilteredTodos();
-
-        if (filteredTodos.length === 0) {
-            this.todoList.innerHTML = '<p class="empty-message">No tasks to display. Add one to get started!</p>';
-            return;
-        }
-
-        this.todoList.innerHTML = filteredTodos.map(todo => `
-            <div class="todo-item ${todo.completed ? 'completed' : ''}">
-                <input 
-                    type="checkbox" 
-                    class="todo-checkbox" 
-                    ${todo.completed ? 'checked' : ''}
-                    onchange="app.handleToggleTodo(${todo.id})">
-                <div class="todo-content">
-                    <div class="todo-text">${this.escapeHtml(todo.text)}</div>
-                    <div class="todo-date">Due: ${this.formatDate(todo.date)}</div>
-                </div>
-                <button class="btn-delete" onclick="app.handleDeleteTodo(${todo.id})">Delete</button>
-            </div>
-        `).join('');
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    saveTodos() {
-        localStorage.setItem('todos', JSON.stringify(this.todos));
+// Function: Delete Single Todo
+function deleteTodo(id) {
+    if(confirm('Are you sure you want to delete this task?')) {
+        todos = todos.filter(todo => todo.id !== id);
+        renderTodos();
     }
 }
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.app = new TodoApp();
+// Function: Delete All
+function deleteAll() {
+    if (todos.length > 0 && confirm('Are you sure you want to delete ALL tasks?')) {
+        todos = [];
+        renderTodos();
+    }
+}
+
+// Function: Toggle Status
+function toggleStatus(id) {
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+        todo.completed = !todo.completed;
+        renderTodos();
+    }
+}
+
+// Function: Filter Todos
+function filterTodos() {
+    renderTodos();
+}
+
+// Function: Render List
+function renderTodos() {
+    todoListBody.innerHTML = ''; 
+    const filterValue = filterOption.value;
+
+    let filteredTodos = todos;
+
+    if (filterValue === 'completed') {
+        filteredTodos = todos.filter(todo => todo.completed === true);
+    } else if (filterValue === 'pending') {
+        filteredTodos = todos.filter(todo => todo.completed === false);
+    }
+
+    if (filteredTodos.length === 0) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+        
+        filteredTodos.forEach(todo => {
+            const row = document.createElement('tr');
+            
+            // Format date to English style (e.g., Feb 5, 2026)
+            const dateObj = new Date(todo.date);
+            const dateString = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
+            row.innerHTML = `
+                <td style="${todo.completed ? 'text-decoration: line-through; color: #888;' : ''}">${todo.task}</td>
+                <td>${dateString}</td>
+                <td>
+                    <button 
+                        class="status-btn ${todo.completed ? 'status-completed' : 'status-pending'}"
+                        onclick="toggleStatus(${todo.id})">
+                        ${todo.completed ? 'Done' : 'Pending'}
+                    </button>
+                </td>
+                <td>
+                    <button class="btn-delete" onclick="deleteTodo(${todo.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            todoListBody.appendChild(row);
+        });
+    }
+}
+
+// Enter key listener
+taskInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        addTodo();
+    }
 });
+
+// Initial Render
+renderTodos();

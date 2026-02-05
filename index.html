@@ -3,13 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Journey</title>
+    <title>Green To-Do List</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-        <h1 style="color: rgb(120, 161, 58);">My Journey <br/>Through Coding</h1>
-    <hr/> 
-    <h2 style="color: rgb(120, 161, 58);">This is Anggi Seplikurniawan</h2>
-    <img src="catmeme.jpg"width="250" height="250">
-    <p> I am <b>excited</b> to share my journey through coding with you. Coding has always fascinated me, and I am eager to learn more and improve my <b>skills</b>.</p>
+
+    <div class="main-container">
+        <div class="media-section">
+            <div class="video-box">
+                <video autoplay loop playsinline>
+                    <source src="yapapa cat meme.mp4" type="video/mp4">
+                </video>
+                <p class="video-caption">My Coding Buddy 🐱</p>
+            </div>
+        </div>
+
+        <div class="todo-section">
+            <div class="card">
+                <h1>To-Do List</h1>
+                
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Add a new task..." autocomplete="off">
+                    <input type="date" id="dateInput">
+                    <button id="addBtn" onclick="addTodo()"><i class="fas fa-plus"></i></button>
+                </div>
+
+                <div class="action-bar">
+                    <select id="filterOption" onchange="filterTodos()">
+                        <option value="all">All</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                    <button class="btn-delete-all" onclick="deleteAll()">Delete All</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="todoTable">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="todoListBody">
+                            </tbody>
+                    </table>
+                    <div id="emptyState" class="empty-state">
+                        No tasks found
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
 </body>
 </html>
